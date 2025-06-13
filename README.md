@@ -17,6 +17,12 @@ result=$(string_trim "   Text with spaces   ")
 echo "$result"
 ```
 
+Alternatively, you can load a module directly from GitHub without cloning:
+
+```bash
+source <(curl -s https://raw.githubusercontent.com/youruser/bashmod_lib/refs/heads/master/modules/log.sh)
+```
+
 ## Installation
 
 Clone the repository (e.g. as a submodule or via `curl`/`wget`):
