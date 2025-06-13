@@ -30,8 +30,8 @@
 #     https://github.com/Turukmoorea/bashmod_lib/blob/master/check_functions/check_ipv6.sh
 #
 # Functions:
-#   is_valid_v4_cidr <cidr>         – Validates IPv4 CIDR format
-#   is_valid_v6_cidr <cidr>         – Validates IPv6 CIDR format
+#   is_valid_v4_cidr <string>         – Validates IPv4 CIDR format
+#   is_valid_v6_cidr <string>         – Validates IPv6 CIDR format
 #   is_valid_cidr <string>          – Dispatcher: detects type, extracts mask, and validates it
 #
 # License:
