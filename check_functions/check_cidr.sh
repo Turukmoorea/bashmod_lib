@@ -11,7 +11,7 @@
 # 1. Source this module in your script:
 #      source /path/to/check_cidr.sh
 #    OR load it dynamically:
-#      source <(curl -s https://raw.githubusercontent.com/Turukmoorea/bashmod_lib/refs/heads/master/modules/check_cidr.sh)
+#      source <(curl -s https://raw.githubusercontent.com/Turukmoorea/bashmod_lib/refs/heads/master/check_functions/check_cidr.sh)
 #
 # 2. Use the validation functions in your script:
 #      if is_valid_v4_cidr "/24"; then echo "IPv4 mask valid"; fi
