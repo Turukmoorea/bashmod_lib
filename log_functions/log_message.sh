@@ -14,7 +14,7 @@
 #      source < (curl -s https://raw.githubusercontent.com/Turukmoorea/bashmod_lib/refs/heads/master/log_functions/log_message.sh)
 #
 # 2. In your main script, define the following optional variables:
-#      logfile="/var/log/my_script.log"              # Path to your logfile (required!)
+#      log_file="/var/log/my_script.log"              # Path to your logfile (required!)
 #      log_level="INFO"                              # Minimum log level to log (default: NOTICE)
 #      verbose=true                                  # Also print logs to console (stdout)
 #      log_prefix="MyScript"                           # Optional name prefix in log lines (default: script name)
@@ -55,7 +55,7 @@ log_message() {
     )
 
     local min_level="${log_level:-NOTICE}"                                           # Minimum level to log (default: NOTICE)
-    local log_file="${logfile:-/var/log/${log_prefix:-$(basename "$0" .sh)}.log}"    # Fallback logfile path if not set
+    local log_file="${log_file:-/var/log/${log_prefix:-$(basename "$0" .sh)}.log}"    # Fallback logfile path if not set
     local is_verbose="${verbose:-false}"                                             # Whether to also print to stdout
     local function_name="${FUNCNAME[1]:-main}"                                       # Calling function's name (fallback: 'main')
     local line_number="${BASH_LINENO[0]}"                                            # Line number where the log_message was called
