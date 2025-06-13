@@ -26,9 +26,6 @@
 # - Each segment must be a valid hexadecimal value (1 to 4 digits).
 # - IPv4-mapped forms like `::ffff:192.0.2.128` are supported.
 #
-# License:
-#   This snippet is free to use, modify, and distribute.
-#
 # Validation Function ========================================================================================
 
 is_valid_ipv6() {
