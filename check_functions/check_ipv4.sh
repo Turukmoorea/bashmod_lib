@@ -10,7 +10,7 @@
 # 1. Source this module in your script:
 #      source /path/to/check_ipv4.sh
 #    OR load it dynamically:
-#      source <(curl -s https://raw.githubusercontent.com/Turukmoorea/bashmod_lib/refs/heads/master/modules/check_ipv4.sh)
+#      source <(curl -s https://raw.githubusercontent.com/Turukmoorea/bashmod_lib/refs/heads/master/check_functions/check_ipv4.sh)
 #
 # 2. Use the function in your script:
 #      if is_valid_ipv4 "$address"; then
