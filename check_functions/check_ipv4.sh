@@ -25,6 +25,13 @@
 # - Leading zeros are disallowed except for the value 0 itself (e.g. 01.2.3.4 is invalid).
 # - No extra whitespace or characters are allowed.
 #
+# Author: Turukmoorea
+# Repository: https://github.com/Turukmoorea/bashmod_lib
+# Last Updated: 2025-06-23
+#
+# License:
+#   This snippet is free to use, modify, and distribute.
+#
 # Validation Function ========================================================================================
 
 is_valid_ipv4() {
