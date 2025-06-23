@@ -34,6 +34,10 @@
 #   is_valid_v6_cidr <string>         – Validates IPv6 CIDR format
 #   is_valid_cidr <string>          – Dispatcher: detects type, extracts mask, and validates it
 #
+# Author: Turukmoorea
+# Repository: https://github.com/Turukmoorea/bashmod_lib
+# Last Updated: 2025-06-23
+#
 # License:
 #   This snippet is free to use, modify, and distribute.
 #
