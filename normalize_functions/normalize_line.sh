@@ -16,7 +16,7 @@
 # 1. Source this module in your script:
 #      source /path/to/normalize_line.sh
 #    OR load it dynamically from a remote source (e.g. GitHub):
-#      source <(curl -s https://raw.githubusercontent.com/USERNAME/REPO/branch/normalize_line.sh)
+#      source <(curl -s https://raw.githubusercontent.com/Turukmoorea/bashmod_lib/refs/heads/master/normalize_functions/normalize_line.sh)
 #
 # 2. Use the function in your script:
 #      normalized="$(normalize_line "$original")"
@@ -26,10 +26,12 @@
 # - Tabs, multiple spaces, and other horizontal whitespace are reduced to a single space.
 # - Only the given input string is processed – this function does not modify files.
 #
-# License: MIT / Public Domain (adjust as needed)
-# Author: [YOUR NAME OR HANDLE]
-# Repository: https://github.com/USERNAME/REPO
+# Author: Turukmoorea
+# Repository: https://github.com/Turukmoorea/bashmod_lib
 # Last Updated: 2025-06-23
+#
+# License:
+#   This snippet is free to use, modify, and distribute.
 #
 # Line Normalization Function ================================================================================
 normalize_line() {
