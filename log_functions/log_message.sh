@@ -32,6 +32,10 @@
 # Log levels (based on syslog):
 #   EMERGENCY, ALERT, CRITICAL, ERROR, WARNING, NOTICE, INFO, DEBUG
 #
+# Author: Turukmoorea
+# Repository: https://github.com/Turukmoorea/bashmod_lib
+# Last Updated: 2025-06-23
+#
 # License:
 #   This snippet is free to use, modify, and distribute.
 #
