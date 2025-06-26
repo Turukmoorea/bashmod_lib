@@ -10,7 +10,7 @@
 #   1. Source the function:
 #        source /path/to/check_is_natural_number.sh
 #      OR load it dynamically:
-#        source <(curl -s https://.../check_functions/check_is_natural_number.sh)
+#        source <(curl -s https://raw.githubusercontent.com/Turukmoorea/bashmod_lib/refs/heads/master/check_functions/check_natural_number.sh)
 #
 #   2. Use in your script:
 #        if is_natural_number "$value"; then ... fi
