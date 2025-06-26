@@ -17,7 +17,7 @@
 # 1. Source this module in your script:
 #      source /path/to/require_file_contains_any.sh
 #    OR load it dynamically from a remote source (e.g. GitHub):
-#      source <(curl -s https://raw.githubusercontent.com/Turukmoorea/bashmod_lib/refs/heads/master/check_functions/require_file_contains_any.sh)
+#      source <(curl -s https://raw.githubusercontent.com/Turukmoorea/bashmod_lib/refs/heads/master/check_functions/check_file_contains_requirements.sh)
 #
 # 2. Use the function in your script:
 #      require_file_contains_any "/path/to/file" "key" "tsig" "algorithm" "{" "}" ";"
