@@ -1,0 +1,44 @@
+# --------------------------------------------------------------------------------------------------
+# Function: require_file_contains_any
+# --------------------------------------------------------------------------------------------------
+# Checks whether the given file contains *all* specified substrings at least once.
+# This is useful to validate that critical files (like TSIG key files) contain expected keywords.
+#
+# Parameters:
+#   $1      → path to the file to be checked
+#   $@ (≥2) → list of strings (patterns) that must each occur at least once in the file
+#
+# Returns:
+#   0 if all strings are found at least once
+#   1 if any of the strings is missing
+#
+# Usage example:
+#   require_file_contains_any "/etc/bind/key.conf" "key" "tsig" "algorithm" "{" "}" ";"
+# --------------------------------------------------------------------------------------------------
+require_file_contains_any() {
+    local file_path="$1"
+    shift
+    local missing=0
+
+    if [[ ! -f "$file_path" ]]; then
+        log_message "ERROR" "File not found: $file_path"
+        return 1
+    fi
+
+    for pattern in "$@"; do
+        if ! grep -q "$pattern" "$file_path"; then
+            log_message "ERROR" "Required pattern '$pattern' not found in file: $file_path"
+            missing=1
+        else
+            log_message "DEBUG" "Pattern '$pattern' found in: $file_path"
+        fi
+    done
+
+    if [[ "$missing" -eq 1 ]]; then
+        log_message "ERROR" "One or more required patterns missing in: $file_path"
+        return 1
+    fi
+
+    log_message "INFO" "All required patterns found in: $file_path"
+    return 0
+}
