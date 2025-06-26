@@ -1,20 +1,41 @@
-# --------------------------------------------------------------------------------------------------
-# Function: require_file_contains_any
-# --------------------------------------------------------------------------------------------------
-# Checks whether the given file contains *all* specified substrings at least once.
-# This is useful to validate that critical files (like TSIG key files) contain expected keywords.
+#!/bin/bash
+
+# ============================================================================================================
+# File Pattern Requirement Module for Bash Scripts
+# ------------------------------------------------------------------------------------------------------------
+# This module provides a reusable function to ensure that a given file contains all of a set of
+# expected substrings or keywords. It is useful for sanity-checking configuration files, such as
+# TSIG key files, to verify required structure elements.
 #
-# Parameters:
-#   $1      → path to the file to be checked
-#   $@ (≥2) → list of strings (patterns) that must each occur at least once in the file
+# Features:
+# - Takes a filename and one or more required patterns as arguments.
+# - Verifies that each pattern occurs at least once somewhere in the file.
+# - Logs findings using the externally provided `log_message` function.
+# - Returns non-zero if any pattern is missing or file does not exist.
 #
-# Returns:
-#   0 if all strings are found at least once
-#   1 if any of the strings is missing
+# Usage:
+# 1. Source this module in your script:
+#      source /path/to/require_file_contains_any.sh
+#    OR load it dynamically from a remote source (e.g. GitHub):
+#      source <(curl -s https://raw.githubusercontent.com/Turukmoorea/bashmod_lib/refs/heads/master/check_functions/require_file_contains_any.sh)
 #
-# Usage example:
-#   require_file_contains_any "/etc/bind/key.conf" "key" "tsig" "algorithm" "{" "}" ";"
-# --------------------------------------------------------------------------------------------------
+# 2. Use the function in your script:
+#      require_file_contains_any "/path/to/file" "key" "tsig" "algorithm" "{" "}" ";"
+#
+# Notes:
+# - Pattern matching is case-sensitive and based on literal string matching (not regex).
+# - You must provide at least one pattern; otherwise the function will always succeed.
+# - If `log_message` is not defined, output may fail silently.
+#
+# Author: Turukmoorea
+# Repository: https://github.com/Turukmoorea/bashmod_lib
+# Last Updated: 2025-06-24
+#
+# License:
+#   This snippet is free to use, modify, and distribute.
+#
+# File Pattern Requirement Function =========================================================================
+
 require_file_contains_any() {
     local file_path="$1"
     shift
