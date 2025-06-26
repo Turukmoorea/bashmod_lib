@@ -22,7 +22,7 @@
 #
 # Author: Turukmoorea
 # Repository: https://github.com/Turukmoorea/bashmod_lib
-# Last Updated: 2025-06-24
+# Last Updated: 2025-06-26
 #
 # License:
 #   This snippet is free to use, modify, and distribute.
