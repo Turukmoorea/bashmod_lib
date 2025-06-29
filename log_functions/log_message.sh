@@ -54,8 +54,7 @@ log_message() {
 
     # Define numeric values for log levels (based on syslog standard)
     declare -A levels=(
-        [EMERGENCY]=0 [ALERT]=1 [CRITICAL]=2 [ERROR]=3
-        [WARNING]=4 [NOTICE]=5 [INFO]=6 [DEBUG]=7
+        [EMERGENCY]=0 [ALERT]=1 [CRITICAL]=2 [ERROR]=3 [WARNING]=4 [NOTICE]=5 [INFO]=6 [DEBUG]=7
     )
 
     local min_level="${log_level:-NOTICE}"                                           # Minimum level to log (default: NOTICE)
@@ -69,7 +68,7 @@ log_message() {
 
     # Ensure logfile variable is set before continuing
     if [[ -z "$log_file" ]]; then
-        echo "ERROR: logfile variable is not set." >&2
+        echo "ERROR: log_file variable is not set." >&2
         exit 1
     fi
 
@@ -82,8 +81,8 @@ log_message() {
     fi
 
     # Ensure the directory where the logfile should be written is writable.
-    if [[ ! -w "$(dirname "$logfile")" ]]; then
-        echo "ERROR: Cannot write to logfile location: $logfile" >&2
+    if [[ ! -w "$log_dir" ]]; then
+        echo "ERROR: Cannot write to log directory: $log_dir" >&2
         exit 1
     fi
 
