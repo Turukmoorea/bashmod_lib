@@ -23,7 +23,7 @@
 # 1. Source this module in your script:
 #      source /path/to/check_ipv6.sh
 #    OR load it dynamically:
-#      source <(curl -s https://raw.githubusercontent.com/YourUser/YourRepo/main/check_ipv6.sh)
+#      source <(curl -s https://raw.githubusercontent.com/Turukmoorea/bashmod_lib/refs/heads/master/check_functions/check_ipv6.sh)
 #
 #   2. Call the function:
 #        is_valid_ipv6 "2001:db8::1"
