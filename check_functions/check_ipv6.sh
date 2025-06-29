@@ -37,47 +37,53 @@
 
 is_valid_ipv6() {
     local ip="$1"
-    local segments count double_colon=0
+    local segments=()
+    local count=0
+    local double_colon=0
 
-    # Allow mapped IPv4 at end: ::ffff:192.0.2.128
+    # Reject link-local with interface suffix
+    [[ "$ip" == *%* ]] && return 1
+
+    # Special case: IPv4-mapped IPv6 (::ffff:192.0.2.128)
     if [[ "$ip" =~ ^([0-9a-fA-F]{1,4}:){6}([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
         return 0
     fi
-    if [[ "$ip" =~ ::[fF]{4}:(25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\. ]]; then
+    if [[ "$ip" =~ ::[fF]{4}:[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         return 0
     fi
 
-    # Reject interface zone (fe80::1%eth0)
-    if [[ "$ip" == *%* ]]; then
-        return 1
-    fi
-
     # Count "::"
-    if [[ "$ip" == *"::"* ]]; then
-        (( $(grep -o "::" <<< "$ip" | wc -l) > 1 )) && return 1
+    local count_dc
+    count_dc=$(grep -o "::" <<< "$ip" | wc -l)
+    if (( count_dc > 1 )); then
+        return 1
+    elif (( count_dc == 1 )); then
         double_colon=1
     fi
 
-    # Split and count segments
+    # Split into segments
     IFS=':' read -ra segments <<< "$ip"
+
+    # Remove empty segments from leading/trailing "::"
+    if [[ "$ip" == ::* ]]; then
+        segments=("${segments[@]:1}")
+    fi
+    if [[ "$ip" == *:: ]]; then
+        unset 'segments[${#segments[@]}-1]'
+    fi
+
     count=${#segments[@]}
 
-    # Remove empty leading/trailing parts (due to ::)
-    [[ -z "${segments[0]}" ]] && unset segments[0]
-    [[ -z "${segments[-1]}" ]] && unset segments[-1]
-
-    count=${#segments[@]}
-
-    # Valid block count depends on "::"
-    if (( double_colon == 1 )); then
+    # Validate block count
+    if (( double_colon )); then
         (( count <= 7 )) || return 1
     else
         (( count == 8 )) || return 1
     fi
 
-    # Validate each hex segment
-    for segment in "${segments[@]}"; do
-        [[ "$segment" =~ ^[0-9a-fA-F]{1,4}$ ]] || return 1
+    # Validate each segment
+    for seg in "${segments[@]}"; do
+        [[ "$seg" =~ ^[0-9a-fA-F]{1,4}$ ]] || return 1
     done
 
     return 0
