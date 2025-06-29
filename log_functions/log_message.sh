@@ -71,6 +71,14 @@ log_message() {
         exit 1
     fi
 
+    # Create the directory if it does not exist
+    if [[ ! -d "$log_dir" ]]; then
+        mkdir -p "$log_dir" || {
+            echo "ERROR: Cannot create log directory: $log_dir" >&2
+            exit 1
+        }
+    fi
+
     # Ensure the directory where the logfile should be written is writable.
     if [[ ! -w "$(dirname "$logfile")" ]]; then
         echo "ERROR: Cannot write to logfile location: $logfile" >&2
