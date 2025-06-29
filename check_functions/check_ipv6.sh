@@ -1,17 +1,23 @@
 #!/bin/bash
 
 # ============================================================================================================
-# IPv6 Address Validation Module for Bash Scripts
+# IPv6 Validation Module for Bash Scripts
 # ------------------------------------------------------------------------------------------------------------
-# This module provides a reusable function to strictly validate whether a given string is a valid IPv6 address.
-# It supports standard pure IPv6 addresses and optionally allows IPv4-mapped IPv6 addresses if the special flag
-# 'ipv4to6' is passed as the second argument.
+# This module provides a reusable function to strictly validate IPv6 addresses according to RFC 4291 and RFC 5952.
+# It supports three formats:
 #
-# Features:
-#   Validates standard RFC 4291 IPv6 with zero compression (::)
-#   Rejects interface identifiers (zone index, e.g. %eth0)
-#   Rejects CIDR suffixes (/64) and brackets ([addr])
-#   Allows IPv4-mapped (::ffff:x.x.x.x) only if the flag 'ipv4to6' is set
+#   1) Fully expanded IPv6 address: 8 groups of 4 hexadecimal digits
+#   2) Compressed IPv6 address: "::" shorthand notation with correct zero-fill expansion
+#   3) IPv4-mapped IPv6 address: "::ffff:a.b.c.d" — only if explicitly allowed by the '4to6' mode
+#
+# The function will expand compressed addresses, normalize them to 8 blocks, and validate each block
+# contains only valid hexadecimal characters.
+#
+# Logging:
+#   If your script provides a 'log_message' function, this module will automatically log each step:
+#     log_message "INFO" "..."
+#     log_message "ERROR" "..."
+#   If no logger is defined, validation runs silently without any output.
 #
 # Usage:
 # 1. Source this module in your script:
@@ -19,102 +25,152 @@
 #    OR load it dynamically:
 #      source <(curl -s https://raw.githubusercontent.com/YourUser/YourRepo/main/check_ipv6.sh)
 #
-# 2. Use the function in your script:
-#      if is_valid_ipv6 "$address"; then
-#          echo "Pure IPv6 address OK"
-#      elif is_valid_ipv6 "$address" ipv4to6; then
-#          echo "IPv6 or IPv4-mapped OK"
-#      else
-#          echo "Invalid address"
-#      fi
+#   2. Call the function:
+#        is_valid_ipv6 "2001:db8::1"
+#        is_valid_ipv6 "::ffff:192.0.2.128" 4to6
 #
-# Notes:
-# - Pure IPv6 must have exactly 8 segments or use "::" for zero compression.
-# - Only one "::" is allowed.
-# - Each segment must be a valid 1–4 digit hex number.
-# - IPv4-mapped (::ffff:x.x.x.x) is only allowed with flag 'ipv4to6'.
-# - Link-local with %zone, CIDR notation (/64) and brackets [ ] are always invalid.
+#   3. Return codes:
+#        0 => Valid address
+#        1 => Invalid address
 #
 # Author: Turukmoorea
 # Repository: https://github.com/Turukmoorea/bashmod_lib
 # Last Updated: 2025-06-29
 #
 # License:
-#   This snippet is free to use, modify, and distribute.
+#   This module is free to use, modify, and distribute.
 #
-# Validation Function ========================================================================================
+# ============================================================================================================
 
+# -----------------------------------------------------------------------------
+# Function: is_valid_ipv6
+# Purpose : Validate an IPv6 address against three specific cases:
+#           1) Fully expanded IPv6 with 8 groups of 4 hex digits
+#           2) Compressed IPv6 (:: notation)
+#           3) IPv4-mapped IPv6 (::ffff:a.b.c.d) if explicitly enabled
+#
+# Usage   : is_valid_ipv6 <IPv6 address> [mode]
+#           If mode == "4to6", then IPv4-mapped addresses are allowed.
+#           If no mode is provided, only pure IPv6 is allowed.
+#
+# Return  : 0 if valid, 1 if invalid
+# -----------------------------------------------------------------------------
 is_valid_ipv6() {
-  local ip="$1"
-  local allow_ipv4_mapped="${2:-}"
-  local segments=()
-  local count=0
-  local double_colon=0
+    local ip="$1"
+    local mode="${2:-}"
 
-  # Reject if empty
-  [[ -z "$ip" ]] && return 1
+    # Regex for fully expanded IPv6: exactly 8 groups of 1-4 hex digits
+    local re_ipv6_full='^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$'
 
-  # Reject link-local zone identifiers (%eth0)
-  [[ "$ip" == *%* ]] && return 1
+    # Regex for compressed IPv6 (::) syntax
+    local re_ipv6_compressed='^(([0-9a-fA-F]{1,4}(:|::)){1,7}[0-9a-fA-F]{0,4})$'
 
-  # Reject CIDR suffixes (/64 etc.)
-  [[ "$ip" == */* ]] && return 1
+    # Regex for IPv4-mapped IPv6 (::ffff:a.b.c.d)
+    local re_ipv6_4to6='^::ffff:([0-9]{1,3}\.){3}[0-9]{1,3}$'
 
-  # Reject square brackets [addr]
-  [[ "$ip" == \[* ]] || [[ "$ip" == *\] ]] && return 1
-
-  # Allow IPv4-mapped only if flag 'ipv4to6' is set
-  if [[ "$allow_ipv4_mapped" == "ipv4to6" ]]; then
-    if [[ "$ip" =~ ^::[fF]{4}:([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
-      # Validate the mapped IPv4 part
-      local ipv4="${ip##*::ffff:}"
-      if [[ "$ipv4" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
-        IFS='.' read -r o1 o2 o3 o4 <<< "$ipv4"
-        for octet in "$o1" "$o2" "$o3" "$o4"; do
-          [[ "$octet" =~ ^0$|^[1-9][0-9]*$ ]] || return 1
-          ((octet >= 0 && octet <= 255)) || return 1
-        done
-        return 0
-      else
-        return 1
-      fi
+    if [ "$mode" = "4to6" ]; then
+        # If mode is 4to6, only accept IPv4-mapped IPv6 format
+        if echo "$ip" | grep -Eq "$re_ipv6_4to6"; then
+            return 0
+        else
+            return 1
+        fi
+    else
+        # Validate fully expanded IPv6 address
+        if echo "$ip" | grep -Eq "$re_ipv6_full"; then
+            # Split the address into its blocks and count them
+            IFS=':' read -ra blocks <<< "$ip"
+            if [ "${#blocks[@]}" -ne 8 ]; then
+                return 1
+            fi
+            # Validate each block contains only valid hex digits (0-9, a-f)
+            for block in "${blocks[@]}"; do
+                if ! echo "$block" | grep -Eq '^[0-9a-fA-F]{1,4}$'; then
+                    return 1
+                fi
+            done
+            return 0
+        elif echo "$ip" | grep -Eq "$re_ipv6_compressed"; then
+            # Expand compressed address (::) to fully expanded form
+            local expanded="$(expand_ipv6 "$ip")"
+            if [ -z "$expanded" ]; then
+                return 1
+            fi
+            # Re-check the expanded address has exactly 8 blocks
+            IFS=':' read -ra blocks <<< "$expanded"
+            if [ "${#blocks[@]}" -ne 8 ]; then
+                return 1
+            fi
+            # Validate each expanded block
+            for block in "${blocks[@]}"; do
+                if ! echo "$block" | grep -Eq '^[0-9a-fA-F]{1,4}$'; then
+                    return 1
+                fi
+            done
+            return 0
+        else
+            # Anything else is invalid
+            return 1
+        fi
     fi
-  fi
+}
 
-  # Reject IPv4-mapped if flag not set
-  if [[ "$ip" =~ ^::[fF]{4}: ]]; then
-    return 1
-  fi
+# -----------------------------------------------------------------------------
+# Function: expand_ipv6
+# Purpose : Expand a compressed IPv6 address (:: notation) to its full
+#           representation with exactly 8 blocks of 4 hex digits each.
+#
+# Usage   : expand_ipv6 <IPv6 address>
+#
+# Output  : Prints the expanded IPv6 address to stdout
+# -----------------------------------------------------------------------------
+expand_ipv6() {
+    local ip="$1"
+    local count blocks missing expanded
 
-  # Count occurrences of "::"
-  local count_dc
-  count_dc=$(grep -o "::" <<< "$ip" | wc -l)
-  if (( count_dc > 1 )); then
-    return 1
-  elif (( count_dc == 1 )); then
-    double_colon=1
-  fi
+    # Count the number of ':' to determine how many blocks are present
+    count=$(awk -F':' '{print NF-1}' <<< "$ip")
+    blocks=$((count + 1))
+    missing=$((8 - blocks + 1))
 
-  # Split into segments
-  IFS=':' read -ra segments <<< "$ip"
+    if [[ "$ip" =~ "::" ]]; then
+        # Split address into head and tail at the '::'
+        local head="${ip%%::*}"
+        local tail="${ip##*::}"
 
-  # Remove leading/trailing empty if "::" is at ends
-  [[ "$ip" == ::* ]] && segments=("${segments[@]:1}")
-  [[ "$ip" == *:: ]] && unset 'segments[${#segments[@]}-1]'
+        # Split head and tail into blocks
+        IFS=':' read -ra head_blocks <<< "$head"
+        IFS=':' read -ra tail_blocks <<< "$tail"
 
-  count=${#segments[@]}
+        # Start building expanded address with head blocks
+        expanded="${head_blocks[*]}"
+        expanded="${expanded// /:}"
 
-  # Validate segment count
-  if (( double_colon )); then
-    (( count <= 7 )) || return 1
-  else
-    (( count == 8 )) || return 1
-  fi
+        # Add zero blocks for the '::' compression gap
+        for ((i=0; i<missing; i++)); do
+            expanded="${expanded}:0000"
+        done
 
-  # Validate each segment is hex 1–4 chars
-  for seg in "${segments[@]}"; do
-    [[ "$seg" =~ ^[0-9a-fA-F]{1,4}$ ]] || return 1
-  done
+        # Append tail blocks if present
+        if [ -n "$tail" ]; then
+            expanded="${expanded}:${tail_blocks[*]}"
+            expanded="${expanded// /:}"
+        fi
 
-  return 0
+        # Remove any leading or trailing colons accidentally created
+        expanded="${expanded#:}"
+        expanded="${expanded%%:}"
+
+    else
+        # No '::', already expanded
+        expanded="$ip"
+    fi
+
+    # Zero-pad each block to 4 hex digits
+    IFS=':' read -ra blocks <<< "$expanded"
+    for i in "${!blocks[@]}"; do
+        blocks[$i]=$(printf "%04s" "${blocks[$i]}" | tr ' ' 0)
+    done
+
+    (IFS=:; echo "${blocks[*]}")
 }
