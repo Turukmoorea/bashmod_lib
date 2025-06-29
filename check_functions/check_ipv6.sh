@@ -46,7 +46,7 @@
 
 is_valid_ipv6() {
   local ip="$1"
-  local allow_ipv4_mapped="$2"
+  local allow_ipv4_mapped="${2:-}"
   local segments=()
   local count=0
   local double_colon=0
