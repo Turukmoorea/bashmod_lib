@@ -60,10 +60,12 @@ log_message() {
 
     local min_level="${log_level:-NOTICE}"                                           # Minimum level to log (default: NOTICE)
     local log_file="${log_file:-/var/log/${log_prefix:-$(basename "$0" .sh)}.log}"    # Fallback logfile path if not set
+    local log_dir="$(dirname "$log_file")"
     local is_verbose="${verbose:-false}"                                             # Whether to also print to stdout
     local function_name="${FUNCNAME[1]:-main}"                                       # Calling function's name (fallback: 'main')
     local line_number="${BASH_LINENO[0]}"                                            # Line number where the log_message was called
     local prefix="${log_prefix:-$(basename "$0")}"                                   # Default prefix is script name
+    
 
     # Ensure logfile variable is set before continuing
     if [[ -z "$log_file" ]]; then
