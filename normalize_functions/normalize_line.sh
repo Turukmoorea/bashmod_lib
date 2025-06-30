@@ -10,8 +10,10 @@
 # Features:
 # - Collapses all consecutive whitespace characters (spaces, tabs) outside of quotes into a single space.
 # - Trims trailing whitespace from the end of the line.
-# - Removes trailing comments that start with a semicolon (;) or hash (#), but only if they are
-#   preceded by whitespace. If there is no whitespace before ; or #, it is not treated as a comment.
+# - Removes inline comments that start with a semicolon (;) or hash (#), but only if they are
+#   preceded by at least one whitespace character.
+# - Completely removes lines that consist only of a comment, i.e. lines starting with ; or #,
+#   possibly after leading whitespace.
 # - Keeps everything inside single ('') and double ("") quotes unchanged, including whitespace and comment symbols.
 #
 # Usage:
@@ -26,7 +28,8 @@
 # Notes:
 # - Quoted parts of the input remain fully intact.
 # - Only whitespace and trailing comments outside of quotes are normalized or removed.
-# - A comment starts with ; or # only if there is at least one whitespace character before it.
+# - An inline comment is only removed if ; or # is preceded by whitespace.
+# - A full-line comment (e.g. starting with ; or # after optional leading whitespace) causes the entire line to be removed.
 # - Tabs, multiple spaces, and other horizontal whitespace are collapsed to a single space.
 # - Only the given input string is processed — this function does not modify files.
 #
@@ -43,6 +46,17 @@ normalize_line() {
     local line="$1"
     echo "$line" | awk '
     {
+        # 1. Remove leading whitespace
+        l = $0
+        sub(/^[[:space:]]+/, "", l)
+
+        # 2. If line starts with ; or #, treat whole line as comment
+        if (l ~ /^;/ || l ~ /^#/) {
+            print ""
+            next
+        }
+
+        # 3. Otherwise, process normally
         s = ""
         in_quote = 0
         quote_char = ""
@@ -68,7 +82,7 @@ normalize_line() {
                             s = s " "
                         }
                     } else if ((c == ";" || c == "#") && prev_char ~ /[[:space:]]/) {
-                        # only treat as comment if preceded by whitespace
+                        # inline comment if preceded by space
                         break
                     } else {
                         s = s c
@@ -78,9 +92,7 @@ normalize_line() {
             prev_char = c
             i++
         }
-        # remove trailing space
         sub(/[[:space:]]+$/, "", s)
         print s
     }'
 }
-
